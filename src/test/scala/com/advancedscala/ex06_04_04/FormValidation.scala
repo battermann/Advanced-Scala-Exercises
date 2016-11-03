@@ -54,6 +54,10 @@ class FormValidation extends FunSuite {
       .toValidated
   }
 
+  def getUser(request: Map[String, String]): Result[User] = {
+    (readName(request) |@| readAge(request)).map(User.apply)
+  }
+
   test("readName") {
     assert(readName(Map("name" -> "peter")) == "peter".valid[Vector[String]])
     assert(readName(Map("name" -> "")) == Vector("The name must not be blank.").invalid[String])
@@ -64,5 +68,8 @@ class FormValidation extends FunSuite {
     assert(readAge(Map("age" -> "-1")) == Vector("The the age must be non-negative integer.").invalid[Int])
     assert(readAge(Map("age" -> "xyz")) == Vector("The the age must be a valid integer.").invalid[Int])
     assert(readAge(Map("name" -> "peter")) == Vector("The age must be specified.").invalid[Int])
+
+    assert(getUser(Map("age" -> "30", "name" -> "peter")) == User("peter", 30).valid[Vector[String]])
+    assert(getUser(Map("age" -> "-1", "name" -> "peter")) == Vector("The the age must be non-negative integer.").invalid[User])
   }
 }
